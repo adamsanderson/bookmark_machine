@@ -1,0 +1,25 @@
+PATH
+  remote: .
+  specs:
+    bookmark_machine (0.0.1)
+      nokogiri (~> 1.6)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    mini_portile2 (2.1.0)
+    minitest (5.9.0)
+    nokogiri (1.6.8)
+      mini_portile2 (~> 2.1.0)
+      pkg-config (~> 1.1.7)
+    pkg-config (1.1.7)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bookmark_machine!
+  minitest (~> 5.9)
+
+BUNDLED WITH
+   1.10.6
