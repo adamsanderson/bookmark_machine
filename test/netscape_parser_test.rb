@@ -209,6 +209,34 @@ class NetscapeParserTest < BookmarkMachineTest
     assert_equal ["Folder 1"], b4.parents
   end
   
+  def test_parsing_a_chrome_export
+    parser = fixture_parser("chrome.html")
+    
+    bookmarks = parser.bookmarks
+    
+    assert bookmarks.length > 0, "Should contain bookmarks"
+    assert bookmarks.any? {|b| b.parents.length > 0 }, "Should contain folders"
+  end
+  
+  def test_parsing_a_firefox_export
+    parser = fixture_parser("firefox.html")
+    
+    bookmarks = parser.bookmarks
+    
+    assert bookmarks.length > 0, "Should contain bookmarks"
+    assert bookmarks.any? {|b| b.parents.length > 0 }, "Should contain folders"
+  end
+  
+  def test_parsing_a_delicious_export
+    parser = fixture_parser("delicious.html")
+    
+    bookmarks = parser.bookmarks
+    
+    assert bookmarks.length > 0, "Should contain bookmarks"
+    assert bookmarks.all? {|b| b.parents.length == 0 }, "Should not contain folders"
+    assert bookmarks.any? {|b| b.tags.length > 0 }, "Should contain tagged bookmarks"
+  end
+  
   private
   
   def parse_bookmarks(str, count=nil)
