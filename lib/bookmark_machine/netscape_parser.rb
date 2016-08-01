@@ -2,39 +2,124 @@ require 'nokogiri'
 
 module BookmarkMachine
   # Parser for the Netscape Bookmark File format.
-  # Amusingly, the best documentation for it seems to come from Microsoft.
+  # Amusingly, the best documentation for the formatcomes from Microsoft.
   # 
   #   https://msdn.microsoft.com/en-us/library/aa753582(v=vs.85).aspx
   #
   # We live in interesting times.
   class NetscapeParser
-    attr_reader :doc
     
-    def initialize(str)
-      @doc = Nokogiri::HTML(str)
+    def initialize(html)
+      @html = html
     end
     
+    # Returns an Array of Bookmark objects.
     def bookmarks
       @bookmarks ||= begin
-        bookmark_nodes = @doc.css("a[href]")
-        bookmarks = bookmark_nodes.map{|el| convert_element(el) }
-        bookmarks.select{|b| b.url && b.url =~ /^http(s)?\:/i }
+        doc = BookmarkDocument.new
+        parser = Nokogiri::HTML::SAX::Parser.new(doc)
+        parser.parse(@html)
+        
+        doc.bookmarks
       end
     end
     
-    private
+  end
+  
+  # BookmarkDocument implements SAX callbacks for parsing messy bookmark files.
+  # It turns out that a SAX parser is more resilient to bizarre inputs than the
+  # typical Nokogiri parser since it doesn't bother itself with the document 
+  # structure.
+  class BookmarkDocument < Nokogiri::XML::SAX::Document
+    attr_reader :bookmarks
     
-    def convert_element(el)
-      bookmark = Bookmark.new(el[:href], el.text.strip)
+    def initialize
+      super
       
-      bookmark.created_at = epoch_time(el[:add_date])
-      bookmark.updated_at = epoch_time((el[:last_modified] || el[:add_date]))
-      bookmark.icon = el[:icon] || el[:icon_uri]
-      bookmark.description = description_text(el)
-      bookmark.tags = tagged_text(el[:tags])
-      bookmark.parents = parent_names(el)
+      @folders = []
+      @bookmarks = []
+      @current_bookmark = nil
       
-      bookmark
+      reset_state
+    end
+    
+    # Only three elements have semantic meaning, A, H3, and DD,
+    # representing Folder names, Bookmarks, and Descriptions.
+    def start_element(name, attrs = [])
+      case name
+      when "a"  then start_bookmark(attrs)
+      when "h3" then start_folder(attrs)
+      when "dd" then start_description(attrs)
+      else           done
+      end
+    end
+    
+    # Only one closing element has semantic meaning, a closed DL,
+    # which indicates the end of a folder.
+    def end_element(name, attrs = [])
+      case name
+      when "dl" then pop_folder
+      else           done
+      end
+    end
+    
+    def end_document
+      done
+    end
+    
+    def characters(string)
+      @text << string if @state
+    end
+    
+    def start_bookmark(attrs)
+      attrs = Hash[attrs]
+      
+      @current_bookmark = Bookmark.new(attrs['href'])
+      @current_bookmark.created_at = epoch_time(attrs['add_date'])
+      @current_bookmark.updated_at = epoch_time((attrs['last_modified'] || attrs['add_date']))
+      @current_bookmark.icon = attrs['icon'] || attrs['icon_uri']
+      @current_bookmark.tags = tagged_text(attrs['tags'])
+      @current_bookmark.parents = @folders.clone
+      
+      @state = :bookmark
+    end
+    
+    def start_folder(attrs)
+      @state = :folder
+    end
+    
+    def start_description(attrs)
+      @state = :description
+    end
+    
+    def done
+      case @state
+      when :bookmark
+        @current_bookmark.name = @text.strip
+        @bookmarks << @current_bookmark
+        @current_bookmark = nil
+        reset_state
+        
+      when :folder
+        @folders << @text.strip
+        reset_state
+        
+      when :description
+        description = @text.strip
+        @bookmarks.last.description = description unless description == ""
+        reset_state
+        
+      end
+    end
+    
+    def pop_folder
+      @folders.pop
+      done
+    end
+    
+    def reset_state
+      @text = ""
+      @state = nil
     end
     
     # Converts from epoch seconds to a Time object.
@@ -46,27 +131,7 @@ module BookmarkMachine
     def tagged_text(str)
       str.split(",").map{|t| t.strip} if str
     end
-     
-    def description_text(el)
-      sibling = el.parent.next_sibling
-      
-      if sibling && sibling.name == "dd"
-        description = sibling.text.strip
-        return description unless description == ""
-      end
-    end
-    
-    def parent_names(el)
-      parents = []
-      list_elements = el.ancestors("dl")
-      parents = list_elements.map do |el|
-        prev_el = el.previous
-        folder_el = prev_el && prev_el.at_css("h3")
-        folder_el && folder_el.text.strip
-      end
-      
-      parents.compact.reverse
-    end
     
   end
+  
 end

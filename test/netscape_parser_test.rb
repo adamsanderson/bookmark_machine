@@ -204,7 +204,7 @@ class NetscapeParserTest < BookmarkMachineTest
     b1, b2, b3, b4 = bookmarks
     
     assert_equal [], b1.parents
-    assert_equal [], b2.parents
+    assert_equal ["Folder 1"], b2.parents
     assert_equal ["Folder 1", "Folder 2"], b3.parents
     assert_equal ["Folder 1"], b4.parents
   end
@@ -241,7 +241,9 @@ class NetscapeParserTest < BookmarkMachineTest
   
   def parse_bookmarks(str, count=nil)
     bookmarks = NetscapeParser.new(str).bookmarks
-    assert_equal count, bookmarks.length if count
+    if count
+      assert_equal count, bookmarks.length, "Expected #{count} bookmarks from:\n#{str}\nGot:\n#{bookmarks.inspect}"
+    end
     
     bookmarks
   end
