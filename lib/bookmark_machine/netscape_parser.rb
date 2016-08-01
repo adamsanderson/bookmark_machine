@@ -79,7 +79,7 @@ module BookmarkMachine
       @current_bookmark.updated_at = epoch_time((attrs['last_modified'] || attrs['add_date']))
       @current_bookmark.icon = attrs['icon'] || attrs['icon_uri']
       @current_bookmark.tags = tagged_text(attrs['tags'])
-      @current_bookmark.parents = @folders.clone
+      @current_bookmark.folders = @folders.clone
       
       @state = :bookmark
     end

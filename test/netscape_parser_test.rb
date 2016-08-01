@@ -152,13 +152,13 @@ class NetscapeParserTest < BookmarkMachineTest
     assert_nil bookmark.tags
   end
   
-  def test_parents_are_empty_when_in_root
+  def test_folders_are_empty_when_in_root
     bookmark = parse_bookmark <<-SAMPLE_BOOKMARK
       <DT>
         <A HREF="http://example.com/">
     SAMPLE_BOOKMARK
     
-    assert_equal [], bookmark.parents
+    assert_equal [], bookmark.folders
   end
   
   def test_bookmark_can_have_single_parent
@@ -170,10 +170,10 @@ class NetscapeParserTest < BookmarkMachineTest
             <A HREF="http://example.com/">
     SAMPLE_BOOKMARK
     
-    assert_equal ["Folder"], bookmark.parents
+    assert_equal ["Folder"], bookmark.folders
   end
   
-  def test_bookmark_can_have_multiple_parents
+  def test_bookmark_can_have_multiple_folders
     bookmark = parse_bookmark <<-SAMPLE_BOOKMARK
     <DL><p>
         <DT><H3>Folder 1</H3>
@@ -184,7 +184,7 @@ class NetscapeParserTest < BookmarkMachineTest
                 <A HREF="http://example.com/">
     SAMPLE_BOOKMARK
     
-    assert_equal ["Folder 1", "Folder 2"], bookmark.parents
+    assert_equal ["Folder 1", "Folder 2"], bookmark.folders
   end
   
   def test_multiple_bookmarks_may_be_nested
@@ -203,10 +203,10 @@ class NetscapeParserTest < BookmarkMachineTest
     
     b1, b2, b3, b4 = bookmarks
     
-    assert_equal [], b1.parents
-    assert_equal ["Folder 1"], b2.parents
-    assert_equal ["Folder 1", "Folder 2"], b3.parents
-    assert_equal ["Folder 1"], b4.parents
+    assert_equal [], b1.folders
+    assert_equal ["Folder 1"], b2.folders
+    assert_equal ["Folder 1", "Folder 2"], b3.folders
+    assert_equal ["Folder 1"], b4.folders
   end
   
   def test_parsing_a_chrome_export
@@ -215,7 +215,7 @@ class NetscapeParserTest < BookmarkMachineTest
     bookmarks = parser.bookmarks
     
     assert bookmarks.length > 0, "Should contain bookmarks"
-    assert bookmarks.any? {|b| b.parents.length > 0 }, "Should contain folders"
+    assert bookmarks.any? {|b| b.folders.length > 0 }, "Should contain folders"
   end
   
   def test_parsing_a_firefox_export
@@ -224,7 +224,7 @@ class NetscapeParserTest < BookmarkMachineTest
     bookmarks = parser.bookmarks
     
     assert bookmarks.length > 0, "Should contain bookmarks"
-    assert bookmarks.any? {|b| b.parents.length > 0 }, "Should contain folders"
+    assert bookmarks.any? {|b| b.folders.length > 0 }, "Should contain folders"
   end
   
   def test_parsing_a_delicious_export
@@ -233,7 +233,7 @@ class NetscapeParserTest < BookmarkMachineTest
     bookmarks = parser.bookmarks
     
     assert bookmarks.length > 0, "Should contain bookmarks"
-    assert bookmarks.all? {|b| b.parents.length == 0 }, "Should not contain folders"
+    assert bookmarks.all? {|b| b.folders.length == 0 }, "Should not contain folders"
     assert bookmarks.any? {|b| b.tags.length > 0 }, "Should contain tagged bookmarks"
   end
   

@@ -18,15 +18,15 @@ bookmarks = parser.bookmarks
 BookmarkMachine represents bookmarks as an object containing:
 
 * `url` - Bookmark's url
-* `name` - Page's name
+* `name` - Page's name, defaults to an empty string
 * `created_at` - `Time` the bookmark was created
 * `updated_at` - `Time` the bookmark was last updated
 * `icon` - Either a data uri or url to an icon
-* `parents` - An `Array` of the bookmark's parent folders
+* `folders` - An `Array` of the bookmark's parent folders
 * `tags` - An `Array` of tags (less common)
 * `description` - An extended description of the bookmark
 
-Any fields that aren't present will be nil (as opposed to empty objects).
+Any fields that aren't present will be nil unless otherwise noted.
 
 Warning 
 -------
