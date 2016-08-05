@@ -2,7 +2,7 @@ require 'nokogiri'
 
 module BookmarkMachine
   # Parser for the Netscape Bookmark File format.
-  # Amusingly, the best documentation for the formatcomes from Microsoft.
+  # Amusingly, the best documentation for the format comes from Microsoft.
   # 
   #   https://msdn.microsoft.com/en-us/library/aa753582(v=vs.85).aspx
   #
