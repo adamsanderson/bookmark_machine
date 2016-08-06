@@ -1,8 +1,6 @@
 require 'nokogiri'
 
 module BookmarkMachine
-  DOCTYPE = "<!DOCTYPE NETSCAPE-Bookmark-file-1>"
-  
   # Formatter for the Netscape Bookmark File format.
   # Amusingly, the best documentation for the format comes from Microsoft.
   # 
@@ -28,12 +26,13 @@ module BookmarkMachine
     
     alias_method :to_s, :to_html
     
+    # :nodoc:
     # This is a simple writer for outputting bookmark appropriate HTML.
     # Since the expected HTML doesn't have a root, uses a custom doctype,
     # and doesn't close most tags, it's easier to just write the output 
-    # manually rather than try to get Nokogiri to format it poortly for us.
+    # manually rather than try to get Nokogiri to format it poorly for us.
     # 
-    # Plus this is just kind of fun in a bizarre unfun kind of way.
+    # Plus this is just kind of fun in a bizarre un-fun kind of way.
     class Writer
       HEADER = <<-HTML.gsub(/^        /, "")
         <!DOCTYPE NETSCAPE-Bookmark-file-1>

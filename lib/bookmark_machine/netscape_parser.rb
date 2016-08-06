@@ -26,6 +26,7 @@ module BookmarkMachine
     
   end
   
+  # :nodoc:
   # BookmarkDocument implements SAX callbacks for parsing messy bookmark files.
   # It turns out that a SAX parser is more resilient to bizarre inputs than the
   # typical Nokogiri parser since it doesn't bother itself with the document 

@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.email       = ['netghost@gmail.com']
   s.homepage    = 'https://github.com/adamsanderson/bookmark_machine'
   
-  s.summary     = 'Reads and writes to a variety of bookmark file formats/flavors.'
+  s.summary     = 'Reads and writes netscape bookmark files.'
   s.description = 'Parse and format bookmarks'
   s.licenses    = 'MIT'
 

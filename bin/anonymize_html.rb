@@ -14,6 +14,7 @@ require 'nokogiri'
 require 'base64'
 
 # A useful sampling of words; the original ipsum lorum by Lewis Carroll
+# 
 WORDS = <<-JABBERWOCKY.split(/[\s\W]+/m).reject{|w| w =~ /\s+/ }.map(&:downcase)
 Twas brillig, and the slithy toves
   Did gyre and gimble in the wabe:
@@ -50,20 +51,21 @@ All mimsy were the borogoves,
   
 JABBERWOCKY
 
-@doc = Nokogiri::HTML(ARGV.length > 0 ? IO.read(ARGV[0]) : STDIN.read)
-
+# Substitue attributes for the given element type in the document.
 def sub_attr(tag, attr)
   @doc.css("#{tag}[#{attr}]").each do |el|
     el[attr] = yield el[attr]
   end
 end
 
+# Substitue text for the given element type in the document.
 def sub_text(tag)
   @doc.css(tag).each do |el|
     el.content = yield el.content
   end
 end
 
+# Generate a fake url.
 def fake_url
   protocol = rand(10) > 8 ? "http" : "https"
   domain   = (rand(3)+2).times.map{ rand(2 ** 12).to_s(32) }.join(".")
@@ -72,22 +74,27 @@ def fake_url
   "#{protocol}://#{domain}/#{path}"
 end
 
+# Generates a URL safe base64 encoded String.
 def fake_base_64
   Base64.urlsafe_encode64(words(20).join)
 end
 
+# Samples from the excellent lexicon of the Jabberwocky, source
+# of all good slithy toves.
 def words(length)
   WORDS.sample(length)
 end
 
+# Replaces a collection of words (or tags), with a new collection
+# containing the same number of beamish words.
 def replace_words(text, delimiter=" ")
   count = text.split(delimiter).count
   words(count).join(delimiter)
 end
 
+# Converts most elements (except for `p` tags), and their attributes
+# to uppercase. Why not `p` tags? I know not, but that's the convention.
 def upcase_elements(node)
-  # I do not know why, but the bookmark files all use a lowercase
-  # p tag.
   node.name = node.name.upcase unless node.name == "p"
   
   # Make sure all the ATTRIBUTES ARE SHOUTING at you!
@@ -98,6 +105,10 @@ def upcase_elements(node)
   node.elements.each{|el| upcase_elements(el) }
 end
 
+# Parses the input document either from the first argument or STDIN:
+@doc = Nokogiri::HTML(ARGV.length > 0 ? IO.read(ARGV[0]) : STDIN.read)
+
+# Substitutes meaningful information with borogoves and Jubjub birds.
 sub_attr("a", "href")     { fake_url }
 sub_attr("a", "icon_uri") { fake_url }
 sub_attr("a", "icon")     { "data:image/png;base64,#{ fake_base_64 }" }
@@ -105,7 +116,7 @@ sub_attr("a", "tags")     {|s| replace_words(s, ",") }
 sub_text("a")             {|s| replace_words(s) }
 sub_text("h3")            {|s| replace_words(s) }
 
-# Now we deformat this thing back into the mess it started with:
+# Deformats this back into the mess it started with:
 
 # 1. Lower case tag names? What is this, 1998? UPCASE!
 upcase_elements(@doc.root)
@@ -120,5 +131,9 @@ html = @doc.to_html(indent: 2)
   .gsub(%r(\s*</?HEAD>\s*),"")  # Strip HEAD tags
   .gsub(%r(\s*</?BODY>\s*),"")  # Strip BODY tags
   
+# Yes, I know you shouldn't parse HTML with regexps, but this isn't exactly
+# a "10 Best Practices You Should Be Using Today!" kind of script.
+  
 # All done!
+# Enjoy the mome raths.
 puts html
