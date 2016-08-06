@@ -50,6 +50,8 @@ module BookmarkMachine
       def initialize(io)
         @io = io
         @folders = []
+        io.set_encoding(Encoding::UTF_8)
+        
         start
       end
       

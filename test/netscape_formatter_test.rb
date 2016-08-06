@@ -99,6 +99,16 @@ class NetscapeFormatterTest < BookmarkMachineTest
     assert_round_trips_fixture("delicious.html")
   end
   
+  def test_outputs_a_utf8_encoded_string
+    name = "9‰ about the €uro!".encode(Encoding::WINDOWS_1252)
+    bookmark = Bookmark.new("http://example.com", name: name)
+    
+    formatter = NetscapeFormatter.new([bookmark])
+    html = formatter.to_html
+    
+    assert_equal Encoding::UTF_8, html.encoding
+  end
+  
   private
   
   def assert_select(doc, selector, count=1, message=nil)
